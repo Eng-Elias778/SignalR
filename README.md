@@ -444,5 +444,5 @@ ASPNETCORE_URLS="https://+:443;http://+:80"
 - 📖 الوثائق: [docs.company.com](https://docs.company.com)
 
 ---
+<img width="991" height="884" alt="image" src="https://github.com/user-attachments/assets/6878de57-04d0-47fa-8c2b-b7398585aa5b" />
 
-**تم تطوير هذا النظام بواسطة فريق التطوير** 🚀
