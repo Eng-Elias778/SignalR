@@ -1,0 +1,506 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>نظام الإشعارات الفورية - SignalR ERP</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 15px;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.1);
+            overflow: hidden;
+        }
+
+        .header {
+            background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+            color: white;
+            padding: 30px;
+            text-align: center;
+        }
+
+        .header h1 {
+            font-size: 2.5em;
+            margin-bottom: 10px;
+        }
+
+        .header p {
+            font-size: 1.2em;
+            opacity: 0.9;
+        }
+
+        .main-content {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 30px;
+            padding: 30px;
+        }
+
+        .connection-panel {
+            background: #f8f9fa;
+            border-radius: 10px;
+            padding: 25px;
+            border: 2px solid #e9ecef;
+        }
+
+        .notifications-panel {
+            background: #f8f9fa;
+            border-radius: 10px;
+            padding: 25px;
+            border: 2px solid #e9ecef;
+        }
+
+        .panel-title {
+            font-size: 1.5em;
+            margin-bottom: 20px;
+            color: #333;
+            border-bottom: 2px solid #4facfe;
+            padding-bottom: 10px;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 600;
+            color: #555;
+        }
+
+        .form-group input, .form-group select {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid #ddd;
+            border-radius: 8px;
+            font-size: 16px;
+            transition: border-color 0.3s;
+        }
+
+        .form-group input:focus, .form-group select:focus {
+            outline: none;
+            border-color: #4facfe;
+        }
+
+        .btn {
+            background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+            color: white;
+            border: none;
+            padding: 12px 25px;
+            border-radius: 8px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: transform 0.2s;
+            margin: 5px;
+        }
+
+        .btn:hover {
+            transform: translateY(-2px);
+        }
+
+        .btn-danger {
+            background: linear-gradient(135deg, #ff6b6b 0%, #ee5a52 100%);
+        }
+
+        .btn-success {
+            background: linear-gradient(135deg, #51cf66 0%, #40c057 100%);
+        }
+
+        .status {
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            font-weight: 600;
+        }
+
+        .status.connected {
+            background: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+        }
+
+        .status.disconnected {
+            background: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+        }
+
+        .notifications-list {
+            max-height: 400px;
+            overflow-y: auto;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            padding: 10px;
+        }
+
+        .notification-item {
+            background: white;
+            border: 1px solid #e9ecef;
+            border-radius: 8px;
+            padding: 15px;
+            margin-bottom: 10px;
+            transition: all 0.3s;
+        }
+
+        .notification-item:hover {
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+            transform: translateY(-2px);
+        }
+
+        .notification-item.unread {
+            border-left: 4px solid #4facfe;
+        }
+
+        .notification-item.high-priority {
+            border-left: 4px solid #ff6b6b;
+        }
+
+        .notification-item.critical {
+            border-left: 4px solid #dc3545;
+            background: #fff5f5;
+        }
+
+        .notification-title {
+            font-weight: 600;
+            color: #333;
+            margin-bottom: 5px;
+        }
+
+        .notification-message {
+            color: #666;
+            margin-bottom: 10px;
+        }
+
+        .notification-meta {
+            font-size: 0.9em;
+            color: #999;
+            display: flex;
+            justify-content: space-between;
+        }
+
+        .examples-section {
+            grid-column: 1 / -1;
+            background: #f8f9fa;
+            border-radius: 10px;
+            padding: 25px;
+            margin-top: 20px;
+        }
+
+        .example-buttons {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 15px;
+            margin-top: 20px;
+        }
+
+        .example-btn {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            padding: 15px;
+            border-radius: 8px;
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: transform 0.2s;
+        }
+
+        .example-btn:hover {
+            transform: translateY(-2px);
+        }
+
+        @media (max-width: 768px) {
+            .main-content {
+                grid-template-columns: 1fr;
+            }
+            
+            .header h1 {
+                font-size: 2em;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🚀 نظام الإشعارات الفورية</h1>
+            <p>SignalR ERP - نظام إدارة الإشعارات والتواصل الفوري</p>
+        </div>
+
+        <div class="main-content">
+            <div class="connection-panel">
+                <h2 class="panel-title">🔗 الاتصال</h2>
+                
+                <div id="connectionStatus" class="status disconnected">
+                    غير متصل
+                </div>
+
+                <div class="form-group">
+                    <label for="userId">معرف المستخدم:</label>
+                    <input type="text" id="userId" placeholder="أدخل معرف المستخدم" value="user123">
+                </div>
+
+                <div class="form-group">
+                    <label for="userGroup">المجموعة:</label>
+                    <select id="userGroup">
+                        <option value="">اختر مجموعة</option>
+                        <option value="HR">الموارد البشرية</option>
+                        <option value="Finance">المالية</option>
+                        <option value="IT">التقنية</option>
+                        <option value="Management">الإدارة</option>
+                        <option value="SystemAdmins">مديرو النظام</option>
+                    </select>
+                </div>
+
+                <button id="connectBtn" class="btn">اتصال</button>
+                <button id="disconnectBtn" class="btn btn-danger">قطع الاتصال</button>
+            </div>
+
+            <div class="notifications-panel">
+                <h2 class="panel-title">🔔 الإشعارات</h2>
+                
+                <div class="form-group">
+                    <button id="clearNotificationsBtn" class="btn btn-danger">مسح جميع الإشعارات</button>
+                    <button id="markAllReadBtn" class="btn btn-success">تحديد الكل كمقروء</button>
+                </div>
+
+                <div id="notificationsList" class="notifications-list">
+                    <p style="text-align: center; color: #999; padding: 20px;">
+                        لا توجد إشعارات حالياً
+                    </p>
+                </div>
+            </div>
+        </div>
+
+        <div class="examples-section">
+            <h2 class="panel-title">📋 أمثلة عملية</h2>
+            <p>اضغط على الأزرار أدناه لاختبار أنواع مختلفة من الإشعارات:</p>
+            
+            <div class="example-buttons">
+                <button class="example-btn" onclick="sendVacationApproval()">
+                    🏖️ طلب إجازة
+                </button>
+                <button class="example-btn" onclick="sendNewUserNotification()">
+                    👤 مستخدم جديد
+                </button>
+                <button class="example-btn" onclick="sendDataModifiedNotification()">
+                    📝 تعديل بيانات
+                </button>
+                <button class="example-btn" onclick="sendSystemErrorNotification()">
+                    ⚠️ خطأ نظام
+                </button>
+                <button class="example-btn" onclick="sendTaskAssignment()">
+                    📋 تكليف مهمة
+                </button>
+                <button class="example-btn" onclick="sendFinancialApproval()">
+                    💰 موافقة مالية
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://unpkg.com/@microsoft/signalr@latest/dist/browser/signalr.min.js"></script>
+    <script>
+        let connection = null;
+        let notifications = [];
+
+        // تهيئة الاتصال
+        function initializeConnection() {
+            connection = new signalR.HubConnectionBuilder()
+                .withUrl("/notificationHub")
+                .withAutomaticReconnect()
+                .build();
+
+            // أحداث الاتصال
+            connection.onclose(() => {
+                updateConnectionStatus(false);
+            });
+
+            connection.onreconnecting(() => {
+                updateConnectionStatus(false, "إعادة الاتصال...");
+            });
+
+            connection.onreconnected(() => {
+                updateConnectionStatus(true);
+            });
+
+            // استقبال الإشعارات
+            connection.on("ReceiveNotification", (notification) => {
+                addNotification(notification);
+            });
+
+            connection.on("UserConnected", (userId) => {
+                console.log(`User ${userId} connected`);
+            });
+
+            connection.on("UserDisconnected", (userId) => {
+                console.log(`User ${userId} disconnected`);
+            });
+        }
+
+        // تحديث حالة الاتصال
+        function updateConnectionStatus(isConnected, message = null) {
+            const statusEl = document.getElementById('connectionStatus');
+            if (isConnected) {
+                statusEl.className = 'status connected';
+                statusEl.textContent = message || 'متصل';
+            } else {
+                statusEl.className = 'status disconnected';
+                statusEl.textContent = message || 'غير متصل';
+            }
+        }
+
+        // الاتصال
+        async function connect() {
+            try {
+                const userId = document.getElementById('userId').value;
+                const userGroup = document.getElementById('userGroup').value;
+
+                if (!userId) {
+                    alert('يرجى إدخال معرف المستخدم');
+                    return;
+                }
+
+                await connection.start();
+                
+                // الانضمام للمجموعة إذا تم اختيارها
+                if (userGroup) {
+                    await connection.invoke("JoinGroup", userGroup);
+                }
+
+                updateConnectionStatus(true);
+                console.log('Connected successfully');
+            } catch (err) {
+                console.error('Connection failed:', err);
+                updateConnectionStatus(false);
+            }
+        }
+
+        // قطع الاتصال
+        async function disconnect() {
+            try {
+                await connection.stop();
+                updateConnectionStatus(false);
+                console.log('Disconnected');
+            } catch (err) {
+                console.error('Disconnect failed:', err);
+            }
+        }
+
+        // إضافة إشعار جديد
+        function addNotification(notification) {
+            notifications.unshift(notification);
+            updateNotificationsList();
+            
+            // إشعار صوتي (إذا كان متاحاً)
+            if ('Notification' in window && Notification.permission === 'granted') {
+                new Notification(notification.title, {
+                    body: notification.message,
+                    icon: notification.iconUrl || '/favicon.ico'
+                });
+            }
+        }
+
+        // تحديث قائمة الإشعارات
+        function updateNotificationsList() {
+            const listEl = document.getElementById('notificationsList');
+            
+            if (notifications.length === 0) {
+                listEl.innerHTML = '<p style="text-align: center; color: #999; padding: 20px;">لا توجد إشعارات حالياً</p>';
+                return;
+            }
+
+            listEl.innerHTML = notifications.map(notification => {
+                const priorityClass = notification.priority === 'Critical' ? 'critical' : 
+                                    notification.priority === 'High' ? 'high-priority' : '';
+                const unreadClass = !notification.isRead ? 'unread' : '';
+                
+                return `
+                    <div class="notification-item ${priorityClass} ${unreadClass}">
+                        <div class="notification-title">${notification.title}</div>
+                        <div class="notification-message">${notification.message}</div>
+                        <div class="notification-meta">
+                            <span>${new Date(notification.createdAt).toLocaleString('ar-SA')}</span>
+                            <span>${notification.priority}</span>
+                        </div>
+                    </div>
+                `;
+            }).join('');
+        }
+
+        // مسح جميع الإشعارات
+        function clearNotifications() {
+            notifications = [];
+            updateNotificationsList();
+        }
+
+        // تحديد الكل كمقروء
+        function markAllAsRead() {
+            notifications.forEach(notification => {
+                notification.isRead = true;
+            });
+            updateNotificationsList();
+        }
+
+        // طلب الإذن للإشعارات
+        if ('Notification' in window) {
+            Notification.requestPermission();
+        }
+
+        // أمثلة عملية
+        async function sendVacationApproval() {
+            const userId = document.getElementById('userId').value;
+            await fetch(`/api/examples/vacation-approval?employeeId=${userId}&employeeName=أحمد محمد&managerName=مدير الموارد البشرية&vacationStartDate=2024-01-15&vacationEndDate=2024-01-20`);
+        }
+
+        async function sendNewUserNotification() {
+            await fetch('/api/examples/new-user-created?newUserId=newuser123&newUserName=سارة أحمد&newUserEmail=sara@company.com&adminName=مدير النظام&userRole=موظف');
+        }
+
+        async function sendDataModifiedNotification() {
+            await fetch('/api/examples/data-modified?entityType=Employee&entityId=emp123&entityName=بيانات الموظف&changeType=Updated&userId=admin123&userName=مدير النظام&previousValue=موظف&newValue=مشرف');
+        }
+
+        async function sendSystemErrorNotification() {
+            await fetch('/api/examples/system-error?errorType=High&errorMessage=فشل في الاتصال بقاعدة البيانات&affectedModule=UserManagement&userId=user123');
+        }
+
+        async function sendTaskAssignment() {
+            const userId = document.getElementById('userId').value;
+            await fetch(`/api/examples/task-assignment?taskId=task123&taskTitle=مراجعة التقارير الشهرية&assignedToUserId=${userId}&assignedToUserName=المستخدم&assignedByUserName=مدير المشروع&dueDate=2024-01-30&priority=High`);
+        }
+
+        async function sendFinancialApproval() {
+            await fetch('/api/examples/financial-approval?requestId=fin123&requestType=مصروفات&amount=5000&currency=ريال&requesterName=أحمد محمد&approverUserId=manager123&status=Pending');
+        }
+
+        // أحداث الأزرار
+        document.getElementById('connectBtn').addEventListener('click', connect);
+        document.getElementById('disconnectBtn').addEventListener('click', disconnect);
+        document.getElementById('clearNotificationsBtn').addEventListener('click', clearNotifications);
+        document.getElementById('markAllReadBtn').addEventListener('click', markAllAsRead);
+
+        // تهيئة الاتصال عند تحميل الصفحة
+        window.addEventListener('load', () => {
+            initializeConnection();
+        });
+    </script>
+</body>
+</html>
